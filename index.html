@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Archivos .fxt</title>
+    <style>
+               body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e1e;
+            color: #ddd;
+            text-align: center;
+            margin: 20px;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #61dafb; /* Azul similar a React */
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+            color: #ddd;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: #333;
+            color: #ddd;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #botonGenerarCampos {
+            background-color: #61dafb; /* Azul similar a React */
+            color: #fff;
+        }
+
+        #botonGenerarArchivoFXT {
+            background-color: #28a745; /* Verde similar a GitHub */
+            color: #fff;
+        }
+
+        #botonLimpiar {
+            background-color: #d9534f; /* Rojo similar a Bootstrap */
+            color: #fff;
+        }
+
+        #botonAleatorio {
+            background-color: #f0ad4e; /* Amarillo anaranjado similar a Bootstrap */
+            color: #fff;
+        }
+
+        button:hover {
+            filter: brightness(85%); /* Reducir brillo al pasar el ratón */
+        }
+    </style>
+    <script>
+        // Diccionario de mapeo de caracteres especiales
+        const mapeoCaracteresEspeciales = {
+            'á': '˜', 'é': 'ž', 'í': '¢', 'ó': '¦', 'ú': 'ª',
+            'Á': '', 'É': '‡', 'Í': '‹', 'Ó': '', 'Ú': '“',
+            '¡': '^', '¿': '¯',
+            'ü': '¬', 'Ü': '•', 'ñ': '®', 'Ñ': '­', '°': '|',
+            '&': '*', '0': '°', '4': '´', 'ç': 'œ', 'è': '',
+            'ö': '¨', 'ï': '¤'
+        };
+
+        // Función para reemplazar caracteres en un texto
+        function reemplazarCaracteresEspeciales(texto) {
+            return texto.split('').map(c => mapeoCaracteresEspeciales[c] || c).join('');
+        }
+
+        function generarCampos() {
+            const cantidadIdentificadores = parseInt(document.getElementById('cantidadIdentificadores').value, 10);
+            const contenedorIdentificadores = document.getElementById('contenedorIdentificadores');
+            const nombreBase = document.getElementById('nombreBase').value;
+            contenedorIdentificadores.innerHTML = ''; // Limpiar el contenedor
+
+            if (nombreBase.trim() === '') {
+                // Si no se proporciona un nombre base, generar identificadores aleatorios
+                for (let i = 0; i < cantidadIdentificadores; i++) {
+                    const identificador = generarIdentificadorAleatorio();
+                    agregarCampo(contenedorIdentificadores, identificador);
+                }
+            } else {
+                // Generar identificadores consecutivos basados en el nombre base
+                for (let i = 0; i < cantidadIdentificadores; i++) {
+                    const identificador = generarIdentificadorConsecutivo(nombreBase, i);
+                    agregarCampo(contenedorIdentificadores, identificador);
+                }
+            }
+        }
+
+        function agregarCampo(contenedor, identificador) {
+            const label = document.createElement('label');
+            label.textContent = `Texto para ${identificador}:`;
+
+            const textarea = document.createElement('textarea');
+            textarea.id = `texto-${identificador}`;
+            textarea.placeholder = `Ingresa el texto para ${identificador}`;
+
+            contenedor.appendChild(label);
+            contenedor.appendChild(textarea);
+        }
+
+        function generarArchivoFXT() {
+            const contenedorIdentificadores = document.getElementById('contenedorIdentificadores');
+            const identificadores = Array.from(contenedorIdentificadores.getElementsByTagName('textarea')).map(textarea => {
+                const identificador = textarea.id.replace('texto-', '');
+                const texto = textarea.value;
+                return { identificador, texto };
+            });
+
+            let archivoFXT = '';
+            for (const { identificador, texto } of identificadores) {
+                archivoFXT += `${identificador} ${reemplazarCaracteresEspeciales(texto)}\n`;
+            }
+
+            document.getElementById('resultadoArchivoFXT').value = archivoFXT;
+        }
+
+        function generarIdentificadorConsecutivo(base, indice) {
+        const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const ultimaLetra = letras.charAt(indice % letras.length);
+        const penultimaLetra = letras.charAt(Math.floor(indice / letras.length) % letras.length);
+        return base.slice(0, -2) + penultimaLetra + ultimaLetra;
+
+        }
+
+        function generarIdentificadorAleatorio() {
+            const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            return letras.charAt(Math.floor(Math.random() * letras.length)) +
+                letras.charAt(Math.floor(Math.random() * letras.length)) +
+                letras.charAt(Math.floor(Math.random() * letras.length)) +
+                letras.charAt(Math.floor(Math.random() * letras.length)) +
+                letras.charAt(Math.floor(Math.random() * letras.length)) +
+                letras.charAt(Math.floor(Math.random() * letras.length)) +
+                letras.charAt(Math.floor(Math.random() * letras.length));
+        }
+    </script>
+</head>
+<body>
+
+    <h1>Generador de Archivos .fxt</h1>
+
+    <label for="nombreBase">Nombre de la primera ID:</label>
+    <input type="text" id="nombreBase" placeholder="Ingresa el nombre de la primera ID">
+
+    <label for="cantidadIdentificadores">Cantidad de Identificadores:</label>
+    <input type="number" id="cantidadIdentificadores" min="1" value="1">
+    <button id="botonGenerarCampos" onclick="generarCampos()">Generar Campos</button>
+
+    <div id="contenedorIdentificadores">
+        <!-- Contenedor para los campos de texto dinámicos -->
+    </div>
+
+    <button id="botonGenerarArchivoFXT" onclick="generarArchivoFXT()">Generar Archivo .fxt</button>
+    <button id="botonLimpiar" onclick="limpiarCampos()">Limpiar Campos</button>
+
+    <label for="resultadoArchivoFXT">Resultado:</label>
+    <textarea id="resultadoArchivoFXT" readonly></textarea>
+
+    <script>
+        // Funciones adicionales
+        function limpiarCampos() {
+            document.getElementById('contenedorIdentificadores').innerHTML = '';
+        }
+
+
+    </script>
+</body>
+</html>
+</html>
